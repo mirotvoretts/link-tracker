@@ -1,0 +1,106 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: scrapper
+  devtools:
+    restart:
+      enabled: false
+  config:
+    import: optional:file:../.env[.properties],optional:file:.env[.properties]
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/scrapper}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  liquibase:
+    change-log: classpath:db/changelog/master.xml
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    timeout: 10s
+    password: ${REDIS_PASSWORD:password}
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+  cache:
+    type: redis
+    redis:
+      time-to-live: ${CACHE_TTL:600000}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    schema-registry-url: ${KAFKA_SCHEMA_REGISTRY_URL:http://localhost:8081}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    consumer:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      group-id: ${KAFKA_GROUP_ID:bot-consumer}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.type.mapping: "linkUpdateRequest:backend.academy.linktracker.scrapper.dto.request.LinkUpdateRequest"
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p --- [%thread] [%-40.40logger{39}] [chatId=%X{chatId:-N/A}] [linkId=%X{linkId:-N/A}] [url=%X{url:-N/A}] [%msg]%n"
+  level:
+    root: INFO
+    backend.academy.linktracker.scrapper: DEBUG
+
+app:
+  stackoverflow:
+    key: ${STACKOVERFLOW_KEY}
+    access-token: ${STACKOVERFLOW_ACCESS_KEY}
+  github:
+    token: ${GITHUB_TOKEN}
+  bot:
+    base-url: http://localhost:8080
+  scheduler:
+    interval: 60000
+    package-size: 100
+    threads: 4
+  notifier:
+    type: kafka
+  cache:
+    userLinks:
+      time-to-live: ${CACHE_USERLINKS_TTL:600000}
+  database-access-type: ORM
+
+resilience4j:
+  retry:
+    instances:
+      botClient:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: false
+  circuitbreaker:
+    instances:
+      botClient:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        permitted-number-of-calls-in-half-open-state: 5
+        wait-duration-in-open-state: 1s
+  timelimiter:
+    instances:
+      botClient:
+        timeout-duration: 2s
+
+
+
+
+
+

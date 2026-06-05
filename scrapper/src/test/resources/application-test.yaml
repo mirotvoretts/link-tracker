@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: scrapper
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 10s
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+  kafka:
+    bootstrap-servers: localhost:9092
+
+app:
+  notifier:
+    type: kafka
+  database-access-type: ORM
+
+resilience4j:
+  retry:
+    instances:
+      botClient:
+        max-attempts: 1
+  circuitbreaker:
+    instances:
+      botClient:
+        failure-rate-threshold: 100
+        permitted-number-of-calls-in-half-open-state: 1
+  timelimiter:
+    instances:
+      botClient:
+        timeout-duration: 30s
+  ratelimiter:
+    instances:
+      updates:
+        limit-for-period: 1000

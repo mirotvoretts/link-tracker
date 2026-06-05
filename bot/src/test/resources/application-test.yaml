@@ -1,0 +1,12 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: bot-consumer-test
+
+app:
+  telegram:
+    url: ${wiremock.server.baseUrl}/bot
+    token: test-token
+    update-listener-sleep: 1s
+    debug: true
