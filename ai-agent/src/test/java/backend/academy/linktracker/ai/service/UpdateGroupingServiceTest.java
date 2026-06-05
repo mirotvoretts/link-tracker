@@ -51,15 +51,14 @@ class UpdateGroupingServiceTest {
     void setUp() {
         when(properties.getGrouping()).thenReturn(grouping);
         when(grouping.getWindowMs()).thenReturn(30000L);
-        when(taskScheduler.schedule(flushTaskCaptor.capture(), any(Instant.class))).thenReturn(null);
+        when(taskScheduler.schedule(flushTaskCaptor.capture(), any(Instant.class)))
+                .thenReturn(null);
     }
 
     @Test
     void submitGroupsMultipleUpdatesForSameChatIntoNumberedListWithMaxPriority() {
-        ProcessedUpdate first =
-                new ProcessedUpdate(1L, "First update", List.of(111L), UpdatePriority.LOW);
-        ProcessedUpdate second =
-                new ProcessedUpdate(2L, "Second update", List.of(111L), UpdatePriority.HIGH);
+        ProcessedUpdate first = new ProcessedUpdate(1L, "First update", List.of(111L), UpdatePriority.LOW);
+        ProcessedUpdate second = new ProcessedUpdate(2L, "Second update", List.of(111L), UpdatePriority.HIGH);
 
         groupingService.submit(first);
         groupingService.submit(second);
@@ -76,8 +75,7 @@ class UpdateGroupingServiceTest {
 
     @Test
     void submitPassesThroughSingleUpdateWithoutGrouping() {
-        ProcessedUpdate single =
-                new ProcessedUpdate(5L, "Only update", List.of(222L), UpdatePriority.MEDIUM);
+        ProcessedUpdate single = new ProcessedUpdate(5L, "Only update", List.of(222L), UpdatePriority.MEDIUM);
 
         groupingService.submit(single);
         flushTaskCaptor.getValue().run();

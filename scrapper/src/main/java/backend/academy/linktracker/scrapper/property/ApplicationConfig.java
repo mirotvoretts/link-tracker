@@ -25,5 +25,6 @@ public record ApplicationConfig(
 
     public record Cache(@NotNull UserLinks userLinks) {}
 
-    public record UserLinks(@NotNull @DurationUnit(ChronoUnit.MILLIS) Duration timeToLive) {}
+    public record UserLinks(
+            @NotNull @DurationUnit(ChronoUnit.MILLIS) Duration timeToLive) {}
 }

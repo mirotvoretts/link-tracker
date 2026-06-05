@@ -44,8 +44,7 @@ class KafkaIntegrationTest extends KafkaIntegrationTestBase {
 
     @Test
     void shouldPublishProcessedMessageToKafkaTopic() {
-        RawUpdate rawUpdate =
-                new RawUpdate(1L, "critical bug fix deployed", "normal-author", List.of(111L));
+        RawUpdate rawUpdate = new RawUpdate(1L, "critical bug fix deployed", "normal-author", List.of(111L));
 
         rawUpdateTemplate.send("link.raw-updates", String.valueOf(rawUpdate.id()), rawUpdate);
 

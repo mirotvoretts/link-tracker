@@ -11,8 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 abstract class KafkaIntegrationTestBase {
 
     @Container
-    static final KafkaContainer KAFKA =
-            new KafkaContainer(DockerImageName.parse("apache/kafka-native:4.1.1"));
+    static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("apache/kafka-native:4.1.1"));
 
     @DynamicPropertySource
     static void configureKafka(DynamicPropertyRegistry registry) {

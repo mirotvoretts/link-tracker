@@ -46,8 +46,7 @@ public abstract class IntegrationEnvironment {
                     DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 
             liquibase.resource.ClassLoaderResourceAccessor resourceAccessor =
-                    new liquibase.resource.ClassLoaderResourceAccessor(
-                            IntegrationEnvironment.class.getClassLoader());
+                    new liquibase.resource.ClassLoaderResourceAccessor(IntegrationEnvironment.class.getClassLoader());
 
             Liquibase liquibase = new Liquibase("db/changelog/master.xml", resourceAccessor, database);
             liquibase.update(new Contexts(), new LabelExpression());

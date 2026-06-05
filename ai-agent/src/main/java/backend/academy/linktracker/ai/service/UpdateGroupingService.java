@@ -37,17 +37,15 @@ public class UpdateGroupingService {
 
     private void submitForChat(long chatId, ProcessedUpdate update) {
         PendingUpdate pending = new PendingUpdate(update.id(), update.description(), update.priority());
-        buffers.compute(
-                chatId,
-                (id, buffer) -> {
-                    if (buffer == null) {
-                        buffer = new ChatBuffer();
-                        long windowMs = properties.getGrouping().getWindowMs();
-                        taskScheduler.schedule(() -> flush(id), Instant.now().plusMillis(windowMs));
-                    }
-                    buffer.add(pending);
-                    return buffer;
-                });
+        buffers.compute(chatId, (id, buffer) -> {
+            if (buffer == null) {
+                buffer = new ChatBuffer();
+                long windowMs = properties.getGrouping().getWindowMs();
+                taskScheduler.schedule(() -> flush(id), Instant.now().plusMillis(windowMs));
+            }
+            buffer.add(pending);
+            return buffer;
+        });
     }
 
     private void flush(long chatId) {
