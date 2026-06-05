@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: eclipse-temurin:25-jdk-alpine
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-cache-${{ github.repository_id }}
+          restore-keys: maven-cache-
+
+      - name: Build
+        env:
+          MAVEN_OPTS: "-Dmaven.repo.local=$HOME/.m2/repository -Xmx4g -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:CICompilerCount=2"
+        run: |
+          ./mvnw package -T 1C -DskipTests=true -Djacoco.skip=true \
+            -Denforcer.skip=true -Dflatten.skip=true \
+            -Dmodernizer.skip=true -Dspotbugs.skip=true -Dpmd.skip=true \
+            --projects '!build-report-aggregate' -am
+
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: eclipse-temurin:25-jdk-alpine
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-cache-${{ github.repository_id }}
+          restore-keys: maven-cache-
+
+      - name: Lint
+        env:
+          MAVEN_OPTS: "-Dmaven.repo.local=$HOME/.m2/repository -Xmx4g -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:CICompilerCount=2"
+        run: |
+          ./mvnw compile -T 1C -am spotless:check modernizer:modernizer spotbugs:check pmd:check pmd:cpd-check
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-cache-${{ github.repository_id }}
+          restore-keys: maven-cache-
+
+      - name: Test
+        env:
+          MAVEN_OPTS: "-Dmaven.repo.local=$HOME/.m2/repository -Xmx4g -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:CICompilerCount=2"
+        run: |
+          ./mvnw test -T 1C \
+            -Dgroups='!integration' \
+            -Denforcer.skip=true -Dflatten.skip=true \
+            -Dmodernizer.skip=true -Dspotbugs.skip=true -Dpmd.skip=true \
+            -Djacoco.skip=true \
+            --projects '!build-report-aggregate' -am
